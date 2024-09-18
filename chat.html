@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat UI with CORS</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+    .chat-container {
+      max-width: 400px;
+      margin: 50px auto;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background-color: #660d0d;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .chat-messages {
+      padding: 10px;
+      overflow-y: scroll;
+      height: 500px;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 5px;
+    }
+
+    .user-message {
+      background-color: #d3ffd3;
+      text-align: right;
+    }
+
+    .bot-message {
+      background-color: #e6e6e6;
+      text-align: left;
+    }
+
+    .chat-input {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background-color: #fff;
+    }
+
+    input[type="text"] {
+      width: 80%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      width: 18%;
+      padding: 8px;
+      background-color: #660d0d;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .upload-button{
+      
+      width: 18%;
+      padding: 8px;
+      background-color: #660d0d;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+    
+    }
+    #fileInput{
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="chat-header">Chat with Bot</div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input">
+    <input type="text" id="userInput" placeholder="Type your message...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+  <input type="file" id="fileInput">
+  <button onclick="uploadFile()" class="upload-button">Upload File</button>
+</div>
+
+<script>
+  function sendMessage() {
+    const userInput = document.getElementById('userInput').value;
+    if (userInput.trim() === '') return;
+
+    const chatMessages = document.getElementById('chatMessages');
+    const userMessage = document.createElement('div');
+    userMessage.className = 'message user-message';
+    userMessage.textContent = userInput;
+    chatMessages.appendChild(userMessage);
+
+    fetch('http://127.0.0.1:5000/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ input_text: userInput }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      const botMessage = document.createElement('div');
+      botMessage.className = 'message bot-message';
+      botMessage.textContent = `Bot: ${data.response}`;
+      chatMessages.appendChild(botMessage);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    })
+    .catch(error => console.error('Error:', error));
+
+    document.getElementById('userInput').value = '';
+  }
+
+  function uploadFile() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    if (!file) {
+      alert('Please select a file to upload');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('http://127.0.0.1:5000/api/upload', {
+      method: 'POST',
+      body: formData,
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      alert(data.message);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Failed to upload file');
+    });
+  }
+</script>
+
+</body>
+</html>
