@@ -51,7 +51,7 @@ def chatbot(input_text):
     response = query_engine.query(input_text)
     return response.response
 
-@app.route('/api/upload', methods=['POST'])
+@app.route('/api/upload', methods=['GET'])
 def upload_file():
     # Clear previous files in the docs folder
     clear_docs_folder()
