@@ -75,7 +75,7 @@ def upload_file():
 
     return jsonify({"error": "File upload failed"}), 500
 
-@app.route('/api/chat', methods=['POST'])
+@app.route('/api/chat', methods=['GET'])
 def chat_api():
     print("Request Received......")
     data = request.get_json()
